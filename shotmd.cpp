@@ -14,9 +14,8 @@
 #include "ui_shotmd.h"
 
 
-shotmd::shotmd(QWidget *parent) :
-        QMainWindow(parent), ui(new Ui::shotmd) {
-    setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint);   // 窗口置顶 + 隐藏标题栏
+shotmd::shotmd(QWidget *parent) : QMainWindow(parent), ui(new Ui::shotmd) {
+    setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint); // 窗口置顶 + 隐藏标题栏
     QScreen *screen = QGuiApplication::primaryScreen();
     originalPixmap = screen->grabWindow(0);
     screenshotLabel = new QLabel(this);
@@ -27,7 +26,7 @@ shotmd::shotmd(QWidget *parent) :
     screenshotLabel->show();
     ui->setupUi(this);
     state = init;
-//    connect(this,&shotmd::mousePressEvent,this,&shotmd::mousePressEvent);
+    //    connect(this,&shotmd::mousePressEvent,this,&shotmd::mousePressEvent);
 }
 
 void shotmd::mousePressEvent(QMouseEvent *event) {
@@ -40,7 +39,6 @@ void shotmd::mousePressEvent(QMouseEvent *event) {
             state = anchorFirst;
             break;
     }
-
 }
 
 void shotmd::mouseMoveEvent(QMouseEvent *event) {
@@ -57,19 +55,18 @@ void shotmd::mouseMoveEvent(QMouseEvent *event) {
             painter.save();
             screenshotLabel->setPixmap(pixmap);
     }
-
 }
 
 void shotmd::mouseReleaseEvent(QMouseEvent *event) {
     switch (state) {
         case anchorFirst:
             QPixmap finalPixmap = originalPixmap.copy(QRect(anchor, event->pos()));
-            finalPixmap.save("screenshot.png");
+            // finalPixmap.save("screenshot.png");
             QByteArray data;
             QBuffer buffer(&data);
             finalPixmap.save(&buffer, "PNG");
             data = data.toBase64();
-            QGuiApplication::clipboard()->setText(data);
+            QGuiApplication::clipboard()->setText(QString("![image](data:image/png;base64,") + data + QString(")"));
             QGuiApplication::exit();
     }
 }
