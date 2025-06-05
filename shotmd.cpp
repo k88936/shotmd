@@ -10,6 +10,7 @@
 #include <QPainter>
 #include <QBuffer>
 #include <QClipboard>
+#include <QTimer>
 #include "shotmd.h"
 #include "ui_shotmd.h"
 
@@ -64,10 +65,15 @@ void shotmd::mouseReleaseEvent(QMouseEvent *event) {
             // finalPixmap.save("screenshot.png");
             QByteArray data;
             QBuffer buffer(&data);
-            finalPixmap.save(&buffer, "PNG");
+            finalPixmap.save(&buffer, "JPEG");
             data = data.toBase64();
-            QGuiApplication::clipboard()->setText(QString("![image](data:image/png;base64,") + data + QString(")"));
-            QGuiApplication::exit();
+            QString str = QString("![image](data:image/jpeg;base64,") + data + QString(")");
+            QGuiApplication::clipboard()->setText(str, QClipboard::Clipboard);
+            QGuiApplication::clipboard()->setText(str, QClipboard::Selection);
+            // QGuiApplication::exit();
+            // Delay quit to let other apps grab the clipboard ownership
+            this->hide();
+            QTimer::singleShot(30000, QGuiApplication::instance(), &QGuiApplication::quit);
     }
 }
 

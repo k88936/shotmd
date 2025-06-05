@@ -13,7 +13,6 @@ find_package(Qt6 COMPONENTS
         REQUIRED)
 
 add_executable(Shotmd
-        WIN32
         main.cpp
         shotmd.cpp
         shotmd.h
