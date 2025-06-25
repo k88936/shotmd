@@ -18,25 +18,6 @@ C:\Qt\6.9.0\msvc2022_64\bin\windeployqt.exe build\Shotmd.exe
 ```
 
 # install using scoop
-Manifest.json
-```json
-{
-      "version": "0.1.0",
-      "url": "https://github.com/k88936/Shotmd/releases/download/v0.1.0/Shotmd.zip",
-      "extract_dir": "Shotmd",
-      "bin": "Shotmd.exe",
-      "shortcuts":[
-            [
-              "Shotmd.exe",
-              "Shotmd"
-            ]
-      ]
-}
-```
-
-usage:
 ```powershell
-'{      "version": "0.1.0",      "url": https://github.com/k88936/Shotmd/releases/download/v0.1.0/Shtmd.zip",      "extract_dir": "Shotmd",      "bin": Shotmd.exe",      "shortcuts":[            [              Shotmd.exe",              "Shotmd"            ]      ]}' > Shotmd.json
-scoop install Shotmd.json
-shotmd
+scoop install https://raw.githubusercontent.com/k88936/Shotmd/refs/heads/master/Shotmd.json
 ```
