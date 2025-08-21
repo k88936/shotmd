@@ -6,11 +6,15 @@
 
 #include <QScreen>
 #include <QMouseEvent>
-#include <QPen>
 #include <QPainter>
 #include <QBuffer>
 #include <QClipboard>
 #include <QTimer>
+#include <QStandardPaths>
+#include <QDateTime>
+#include <QGuiApplication>
+#include <QScreen>
+#include <QMessageBox>
 #include "shotmd.h"
 #include "ui_shotmd.h"
 
@@ -39,12 +43,13 @@ void shotmd::mousePressEvent(QMouseEvent *event) {
             anchor = event->pos();
             state = anchorFirst;
             break;
+        default: ;
     }
 }
 
 void shotmd::mouseMoveEvent(QMouseEvent *event) {
     switch (state) {
-        case anchorFirst:
+        case anchorFirst: {
             anchor2 = event->pos();
             QPen pen;
             pen.setColor(Qt::red);
@@ -55,25 +60,46 @@ void shotmd::mouseMoveEvent(QMouseEvent *event) {
             painter.drawRect(QRect(anchor, anchor2));
             painter.save();
             screenshotLabel->setPixmap(pixmap);
+            break;
+        }
+        default: ;
     }
 }
 
 void shotmd::mouseReleaseEvent(QMouseEvent *event) {
     switch (state) {
-        case anchorFirst:
-            QPixmap finalPixmap = originalPixmap.copy(QRect(anchor, event->pos()));
-            // finalPixmap.save("screenshot.png");
+        case anchorFirst: {
+            const QPixmap finalPixmap = originalPixmap.copy(QRect(anchor, event->pos()));
             QByteArray data;
             QBuffer buffer(&data);
             finalPixmap.save(&buffer, "JPEG");
             data = data.toBase64();
             QString str = QString("![image](data:image/jpeg;base64,") + data + QString(")");
+            // Copy to clipboard (both clipboard and selection, though selection is X11-specific)
             QGuiApplication::clipboard()->setText(str, QClipboard::Clipboard);
             QGuiApplication::clipboard()->setText(str, QClipboard::Selection);
-            // QGuiApplication::exit();
+
+            // Save to file: $HOME/Downloads/shotmd-YYYYMMDD-HHMMSS.jpeg
+            const QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd-hhmmss");
+            QString downloadsPath = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+            if (downloadsPath.isEmpty()) {
+                downloadsPath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation); // Fallback
+            }
+
+            const QString filePath = downloadsPath + "/" + QString("shotmd-%1.jpeg").arg(timestamp);
+            if (!finalPixmap.save(filePath, "JPEG")) {
+                // Show error dialog
+                QMessageBox::critical(nullptr, "Save Failed",
+                                      QString("Could not save screenshot to:\n%1\n\nCheck if you have write permissions.").arg(filePath),
+                                      QMessageBox::Ok);
+            }
+
             // Delay quit to let other apps grab the clipboard ownership
             this->hide();
-            QTimer::singleShot(30000, QGuiApplication::instance(), &QGuiApplication::quit);
+            QTimer::singleShot(60*1000, QGuiApplication::instance(), &QGuiApplication::quit);
+            break;
+        }
+        default: ;
     }
 }
 

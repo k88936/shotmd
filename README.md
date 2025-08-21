@@ -19,5 +19,5 @@ C:\Qt\6.9.0\msvc2022_64\bin\windeployqt.exe build\Shotmd.exe
 
 # install using scoop
 ```powershell
-scoop install https://raw.githubusercontent.com/k88936/Shotmd/refs/heads/master/Shotmd.json
+scoop install https://github.com/k88936/scoop-bucket/raw/refs/heads/master/bucket/Shotmd.json
 ```
