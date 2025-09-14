@@ -1,4 +1,4 @@
-# Shotmd
+# shotmd
   shotmd is a small and handy tool to screenshot and convert to base64 code in order to insert image to markdown.
 # usage
 1. start it. (i recommend you to start it by win key and type "Shotmd"!
@@ -14,10 +14,10 @@ or natively on windows with toolchain file:
 ```shell
 cmake -S . -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=C:\Qt\6.9.0\msvc2022_64\lib\cmake\Qt6\qt.toolchain.cmake 
 cmake --build build --config Release
-C:\Qt\6.9.0\msvc2022_64\bin\windeployqt.exe build\Shotmd.exe
+C:\Qt\6.9.0\msvc2022_64\bin\windeployqt.exe build\shotmd.exe
 ```
 
 # install using scoop
 ```powershell
-scoop install https://github.com/k88936/scoop-bucket/raw/refs/heads/master/bucket/Shotmd.json
+scoop install https://github.com/k88936/scoop-bucket/raw/refs/heads/master/bucket/shotmd.json
 ```
