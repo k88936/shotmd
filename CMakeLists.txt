@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.29)
-project(Shotmd)
+project(shotmd)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_AUTOMOC ON)
@@ -12,14 +12,14 @@ find_package(Qt6 COMPONENTS
         Widgets
         REQUIRED)
 
-add_executable(Shotmd
+add_executable(shotmd
         WIN32
         main.cpp
         shotmd.cpp
         shotmd.h
         shotmd.ui
 )
-target_link_libraries(Shotmd
+target_link_libraries(shotmd
         Qt::Core
         Qt::Gui
         Qt::Widgets
