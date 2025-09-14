@@ -12,14 +12,14 @@ find_package(Qt6 COMPONENTS
         Widgets
         REQUIRED)
 
-add_executable(Shotmd
+add_executable(shotmd
         WIN32
         main.cpp
         shotmd.cpp
         shotmd.h
         shotmd.ui
 )
-target_link_libraries(Shotmd
+target_link_libraries(shotmd
         Qt::Core
         Qt::Gui
         Qt::Widgets
