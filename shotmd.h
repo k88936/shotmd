@@ -20,6 +20,7 @@ public:
     explicit shotmd(QWidget *parent = nullptr);
 
     ~shotmd() override;
+    void keyPressEvent(QKeyEvent *event) override;
 
 private:
     enum states {
@@ -36,6 +37,7 @@ private:
     void mouseReleaseEvent(QMouseEvent *event);
 
     void mouseMoveEvent(QMouseEvent *event);
+void shot(QPoint Tl, QPoint RD);
 };
 
 
