@@ -53,14 +53,26 @@ void shotmd::mouseMoveEvent(QMouseEvent* event) {
 }
 
 void shotmd::updateOverlay() {
-    QPixmap pixmap = originalPixmap.copy();
+    // Start from original screenshot
+    QPixmap composited = originalPixmap.copy();
+    QPainter painter(&composited);
+
+    // Dim whole screen with semi-transparent layer
+    painter.fillRect(composited.rect(), QColor(0, 0, 0, 120)); // 120 alpha black
+
     if (selection.active) {
-        QPainter painter(&pixmap);
+        const QRect sel = selection.rect();
+
+        // Restore the selection area ("hole") by drawing original region back
+        painter.drawPixmap(sel.topLeft(), originalPixmap.copy(sel));
+
+        // Draw selection border
         QPen pen(Qt::red, 2);
         painter.setPen(pen);
-        painter.drawRect(selection.rect());
+        painter.drawRect(sel);
     }
-    screenshotLabel->setPixmap(pixmap);
+    painter.end();
+    screenshotLabel->setPixmap(composited);
 }
 
 void shotmd::captureRegion(const QRect &r) {
