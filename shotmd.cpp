@@ -35,6 +35,7 @@ shotmd::shotmd(QWidget* parent) : QMainWindow(parent), ui(new Ui::shotmd) {
     screenshotLabel->show();
 
     ui->setupUi(this);
+    updateOverlay();
 }
 
 void shotmd::mousePressEvent(QMouseEvent* event) {
