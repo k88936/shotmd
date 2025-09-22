@@ -21,7 +21,10 @@
 
 shotmd::shotmd(QWidget* parent) : QMainWindow(parent), ui(new Ui::shotmd) {
     setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint);
-    QScreen *screen = QGuiApplication::primaryScreen();
+    QScreen* screen = QGuiApplication::screenAt(QCursor::pos());
+    if (!screen) {
+        screen = QGuiApplication::primaryScreen();
+    }
     originalPixmap = screen->grabWindow(0);
 
     screenshotLabel = new QLabel(this);
