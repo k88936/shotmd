@@ -119,6 +119,10 @@ void shotmd::keyPressEvent(QKeyEvent *event) {
         captureRegion(screen->geometry());
         return;
     }
+    if (event->key() == Qt::Key_Escape)
+    {
+        QApplication::quit();
+    }
     QWidget::keyPressEvent(event);
 }
 
