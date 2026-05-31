@@ -26,6 +26,12 @@ pub struct Selection {
     pub monitor: MonitorKey,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Command {
+    Capture,
+    Record { duration_secs: u64 },
+}
+
 
 pub struct UiState {
     monitor_handle: Option<MonitorHandle>,
@@ -35,6 +41,9 @@ pub struct UiState {
     selection: Option<Selection>,
     selection_start: Option<egui::Pos2>,
     selection_end: Option<egui::Pos2>,
+    show_recording_dialog: bool,
+    recording_duration_secs: u64,
+    recording_mode: bool,
 }
 
 impl UiState {
@@ -47,6 +56,9 @@ impl UiState {
             selection: None,
             selection_start: None,
             selection_end: None,
+            show_recording_dialog: false,
+            recording_duration_secs: 5,
+            recording_mode: false,
         }
     }
 
@@ -117,8 +129,13 @@ impl UiState {
         all_captures: &[CapturedMonitor],
         window: &Window,
         ui: &mut egui::Ui,
-    ) -> Option<Selection> {
+    ) -> Option<(Selection, Command)> {
         self.update_window_snapshot(all_captures, window, ui.ctx());
+
+        // 'r' key shortcut to open recording dialog
+        if ui.input_mut(|i| i.consume_key(egui::Modifiers::NONE, egui::Key::R)) {
+            self.show_recording_dialog = true;
+        }
 
         let mut drag_stopped = false;
         if self.image_size.x > 0.0 && self.image_size.y > 0.0 {
@@ -161,9 +178,29 @@ impl UiState {
             ui.label("No monitors detected.");
         }
 
+        // Recording dialog popup
+        if self.show_recording_dialog {
+            egui::Window::new("Recording")
+                .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+                .collapsible(false)
+                .resizable(false)
+                .show(ui.ctx(), |ui| {
+                    ui.label("Recording duration (seconds):");
+                    ui.add(egui::Slider::new(&mut self.recording_duration_secs, 1..=60));
+                    if ui.button("Start Recording").clicked() {
+                        self.show_recording_dialog = false;
+                        self.recording_mode = true;
+                    }
+                });
+        }
+
         if drag_stopped {
             if let Some(selection) = self.selection {
-                return Some(selection);
+                if self.recording_mode {
+                    self.recording_mode = false;
+                    return Some((selection, Command::Record { duration_secs: self.recording_duration_secs }));
+                }
+                return Some((selection, Command::Capture));
             }
         }
 
