@@ -26,11 +26,6 @@ pub struct Selection {
     pub monitor: MonitorKey,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Command {
-    Capture,
-    Record,
-}
 
 pub struct UiState {
     monitor_handle: Option<MonitorHandle>,
@@ -122,7 +117,7 @@ impl UiState {
         all_captures: &[CapturedMonitor],
         window: &Window,
         ui: &mut egui::Ui,
-    ) -> Option<(Selection, Command)> {
+    ) -> Option<Selection> {
         self.update_window_snapshot(all_captures, window, ui.ctx());
 
         let mut drag_stopped = false;
@@ -168,16 +163,17 @@ impl UiState {
 
         if drag_stopped {
             if let Some(selection) = self.selection {
-                return Some((selection, Command::Capture));
+                return Some(selection);
             }
         }
+
 
         None
     }
 }
 
 
-fn monitor_key_for_window(
+pub fn monitor_key_for_window(
     all_captures: &[CapturedMonitor],
     window: &Window,
 ) -> MonitorKey {

@@ -1,14 +1,27 @@
 mod ui;
 
 use anyhow::Context;
+use clap::Parser;
+use egui::load::{BytesLoadResult, BytesLoader, BytesPoll, LoadError};
 use std::sync::{Arc, RwLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 use xcap::Monitor;
-use egui::load::{BytesLoadResult, BytesLoader, BytesPoll, LoadError};
+
+#[derive(Parser)]
+#[command(name = "shotmd", version)]
+struct Cli {
+    #[arg(long)]
+    full_screen: bool,
+}
 
 struct App {
     ui_state: ui::UiState,
     all_captures: Vec<ui::CapturedMonitor>,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Command {
+    Capture,
+    Record,
 }
 
 impl eframe::App for App {
@@ -19,17 +32,33 @@ impl eframe::App for App {
 
         let mut result = None;
         egui::CentralPanel::no_frame().show_inside(ui, |ui| {
-            result = self
-                .ui_state
-                .try_select(&self.all_captures, window, ui);
+            result = self.ui_state.try_select(&self.all_captures, window, ui);
         });
 
-        if let Some((selection, command)) = result {
+        // 'f' key shortcut to capture full screen of current monitor
+        let f_pressed = ui.input_mut(|i| i.consume_key(egui::Modifiers::NONE, egui::Key::F));
+        if f_pressed {
+            let monitor_key = ui::monitor_key_for_window(&self.all_captures, window);
+            if let Some(captured) = self.all_captures.iter().find(|c| c.key == monitor_key) {
+                let selection = ui::Selection {
+                    x: 0,
+                    y: 0,
+                    width: captured.image.width(),
+                    height: captured.image.height(),
+                    monitor: monitor_key,
+                };
+                save_selection(&selection, &self.all_captures).expect("save_selection failed");
+                ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
+            }
+        }
+
+        let command = Command::Capture;
+        if let Some(selection) = result {
             match command {
-                ui::Command::Capture => {
+                Command::Capture => {
                     save_selection(&selection, &self.all_captures).expect("save_selection failed");
                 }
-                ui::Command::Record => todo!(),
+                Command::Record => todo!(),
             }
             ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
         }
@@ -78,7 +107,9 @@ fn capture_all_monitors() -> Vec<ui::CapturedMonitor> {
             height: monitor.height().expect("monitor.height() failed"),
         };
 
-        let image = monitor.capture_image().expect("monitor.capture_image() failed");
+        let image = monitor
+            .capture_image()
+            .expect("monitor.capture_image() failed");
         snapshots.push(ui::CapturedMonitor { key, image });
     }
 
@@ -86,6 +117,23 @@ fn capture_all_monitors() -> Vec<ui::CapturedMonitor> {
 }
 
 fn main() -> eframe::Result {
+    let cli = Cli::parse();
+
+    if cli.full_screen {
+        let all_captures = capture_all_monitors();
+        for capture in &all_captures {
+            let selection = ui::Selection {
+                x: 0,
+                y: 0,
+                width: capture.image.width(),
+                height: capture.image.height(),
+                monitor: capture.key,
+            };
+            save_selection(&selection, &all_captures).expect("save_selection failed");
+        }
+        return Ok(());
+    }
+
     let all_captures = capture_all_monitors();
 
     let options = eframe::NativeOptions {
