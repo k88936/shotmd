@@ -179,34 +179,38 @@ fn record_selection(selection: &ui::Selection, duration_secs: u64) -> anyhow::Re
         .unwrap_or(0);
     let filename = format!("shot-{}.gif", timestamp);
 
-    let file =
-        std::fs::File::create(&filename).with_context(|| format!("Failed to create {filename}"))?;
-    let mut encoder = image::codecs::gif::GifEncoder::new(file);
-    encoder
-        .set_repeat(image::codecs::gif::Repeat::Infinite)
-        .context("Failed to set repeat")?;
-
-    for frame in frames.iter() {
-        let rgba = image::RgbaImage::from_raw(frame.width, frame.height, frame.raw.clone())
-            .context("Failed to create RgbaImage from frame")?;
-        let cropped = image::imageops::crop_imm(
-            &rgba,
-            selection.x,
-            selection.y,
-            selection.width,
-            selection.height,
-        )
-        .to_image();
-        let gif_frame = image::Frame::from_parts(
-            cropped,
-            0,
-            0,
-            image::Delay::from_numer_denom_ms(delay_ms, 1),
-        );
+    let mut gif_buf = Vec::new();
+    {
+        let mut encoder = image::codecs::gif::GifEncoder::new(&mut gif_buf);
         encoder
-            .encode_frame(gif_frame)
-            .context("Failed to encode GIF frame")?;
+            .set_repeat(image::codecs::gif::Repeat::Infinite)
+            .context("Failed to set repeat")?;
+
+        for frame in frames.iter() {
+            let rgba = image::RgbaImage::from_raw(frame.width, frame.height, frame.raw.clone())
+                .context("Failed to create RgbaImage from frame")?;
+            let cropped = image::imageops::crop_imm(
+                &rgba,
+                selection.x,
+                selection.y,
+                selection.width,
+                selection.height,
+            )
+            .to_image();
+            let gif_frame = image::Frame::from_parts(
+                cropped,
+                0,
+                0,
+                image::Delay::from_numer_denom_ms(delay_ms, 1),
+            );
+            encoder
+                .encode_frame(gif_frame)
+                .context("Failed to encode GIF frame")?;
+        }
     }
+
+    std::fs::write(&filename, &gif_buf)
+        .with_context(|| format!("Failed to write {filename}"))?;
 
     Ok(filename)
 }
