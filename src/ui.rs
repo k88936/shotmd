@@ -57,7 +57,7 @@ impl UiState {
             selection_start: None,
             selection_end: None,
             show_recording_dialog: false,
-            recording_duration_secs: 5,
+            recording_duration_secs: 3,
             recording_mode: false,
         }
     }
