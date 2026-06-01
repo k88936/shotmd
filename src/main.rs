@@ -153,6 +153,7 @@ fn record_selection(selection: &ui::Selection, duration_secs: u64) -> anyhow::Re
         }
     });
 
+    thread::sleep(Duration::from_millis(500));
     video_recorder
         .start()
         .context("Failed to start recording")?;
