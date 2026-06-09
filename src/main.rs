@@ -87,11 +87,13 @@ fn save_selection(
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0);
-    let filename = format!("shot-{}.png", timestamp);
+    let downloads = dirs::download_dir().expect("Failed to determine downloads directory");
+    let filename = format!("shotmd-{}.png", timestamp);
+    let save_path = downloads.join(&filename);
     cropped
-        .save(&filename)
-        .with_context(|| format!("Failed to save screenshot to {filename}"))?;
-    Ok(filename)
+        .save(&save_path)
+        .with_context(|| format!("Failed to save screenshot to {}", save_path.display()))?;
+    Ok(save_path.to_string_lossy().to_string())
 }
 
 fn capture_all_monitors() -> Vec<ui::CapturedMonitor> {
@@ -177,7 +179,9 @@ fn record_selection(selection: &ui::Selection, duration_secs: u64) -> anyhow::Re
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0);
-    let filename = format!("shot-{}.gif", timestamp);
+    let downloads = dirs::download_dir().expect("Failed to determine downloads directory");
+    let filename = format!("shotmd-{}.gif", timestamp);
+    let save_path = downloads.join(&filename);
 
     let mut gif_buf = Vec::new();
     {
@@ -209,10 +213,10 @@ fn record_selection(selection: &ui::Selection, duration_secs: u64) -> anyhow::Re
         }
     }
 
-    std::fs::write(&filename, &gif_buf)
-        .with_context(|| format!("Failed to write {filename}"))?;
+    std::fs::write(&save_path, &gif_buf)
+        .with_context(|| format!("Failed to write {}", save_path.display()))?;
 
-    Ok(filename)
+    Ok(save_path.to_string_lossy().to_string())
 }
 
 fn main() -> eframe::Result {
