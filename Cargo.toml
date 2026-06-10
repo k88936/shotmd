@@ -8,8 +8,11 @@ clap = { version = "4", features = ["derive"] }
 xcap = "0.9.6"
 anyhow = "1.0.102"
 egui = "0.34.3"
-image = { version = "0.25", default-features = false, features = ["png", "gif"] }
+image = { version = "0.25", default-features = false, features = ["png", "gif", "jpeg"] }
 egui_extras = { version = "0.34.3", features = ["all_loaders"] }
 eframe = "0.34.3"
 winit = "0.30.13"
 dirs = "6.0.0"
+arboard = "3"
+base64 = "0.22"
+env_logger = "0.11.10"
