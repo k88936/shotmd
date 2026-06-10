@@ -1,12 +1,12 @@
-mod ui;
-mod commands;
 mod bytes_loader;
 
-use crate::ui::Command;
+use shotmd::ui;
+use shotmd::ui::Command;
 use clap::Parser;
 use std::sync::{Arc, Mutex, RwLock};
 use xcap::Monitor;
 use bytes_loader::ShotmdBytesLoader;
+use shotmd::commands::{capture_command, record_command};
 
 #[derive(Parser)]
 #[command(name = "shotmd", version)]
@@ -102,7 +102,7 @@ fn main() -> eframe::Result {
                 height: capture.image.height(),
                 monitor: capture.key,
             };
-            commands::save_selection(&selection, &all_captures).expect("save_selection failed");
+            capture_command::capture_selection(&selection, &all_captures).expect("save_selection failed");
         }
         return Ok(());
     }
@@ -139,14 +139,11 @@ fn main() -> eframe::Result {
     if let Some(pending) = pending_action.lock().unwrap().take() {
         match pending.command {
             ui::Command::Capture => {
-                commands::save_selection(&pending.selection, &*all_captures)
+                capture_command::capture_selection(&pending.selection, &*all_captures)
                     .expect("save_selection failed");
             }
             ui::Command::Record { duration_secs } => {
-                match commands::record_selection(&pending.selection, duration_secs) {
-                    Ok(filename) => println!("Recording saved to {filename}"),
-                    Err(e) => eprintln!("Recording failed: {e}"),
-                }
+                record_command::record_selection(&pending.selection, duration_secs).expect("record_selection failed");
             }
         }
     }

@@ -3,16 +3,26 @@ name = "shotmd"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+
 [dependencies]
 clap = { version = "4", features = ["derive"] }
 xcap = "0.9.6"
 anyhow = "1.0.102"
 egui = "0.34.3"
-image = { version = "0.25", default-features = false, features = ["png", "gif", "jpeg"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
 egui_extras = { version = "0.34.3", features = ["all_loaders"] }
 eframe = "0.34.3"
 winit = "0.30.13"
 dirs = "6.0.0"
 arboard = "3"
+image-webp = "0.2.4"
 base64 = "0.22"
 env_logger = "0.11.10"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "record_selection_bench"
+harness = false
