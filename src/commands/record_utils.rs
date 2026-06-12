@@ -11,11 +11,17 @@ pub struct RecordIter {
     rx: Receiver<Frame>,
     recording_done: Arc<AtomicBool>,
     timer: Option<thread::JoinHandle<anyhow::Result<()>>>,
+    start_time: Option<Instant>,
     last_frame_time: Option<Instant>,
 }
 
+pub struct RecordFrame {
+    pub frame: Frame,
+    pub delay_ms: u32,
+    pub timestamp_ms: u32,
+}
 impl Iterator for RecordIter {
-    type Item = (Frame, u32);
+    type Item = RecordFrame;
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
@@ -24,12 +30,14 @@ impl Iterator for RecordIter {
                 return match self.rx.try_recv() {
                     Ok(frame) => {
                         let now = Instant::now();
+                        let start = *self.start_time.get_or_insert(now);
+                        let timestamp_ms = now.duration_since(start).as_millis() as u32;
                         let delay_ms = match self.last_frame_time {
                             Some(last) => now.duration_since(last).as_millis() as u32,
                             None => 0,
                         };
                         self.last_frame_time = Some(now);
-                        Some((frame, delay_ms))
+                        Some(RecordFrame { frame, delay_ms, timestamp_ms })
                     }
                     Err(_) => None,
                 };
@@ -37,12 +45,14 @@ impl Iterator for RecordIter {
             match self.rx.recv_timeout(Duration::from_millis(50)) {
                 Ok(frame) => {
                     let now = Instant::now();
+                    let start = *self.start_time.get_or_insert(now);
+                    let timestamp_ms = now.duration_since(start).as_millis() as u32;
                     let delay_ms = match self.last_frame_time {
                         Some(last) => now.duration_since(last).as_millis() as u32,
                         None => 0,
                     };
                     self.last_frame_time = Some(now);
-                    return Some((frame, delay_ms));
+                    return Some(RecordFrame { frame, delay_ms, timestamp_ms });
                 }
                 Err(RecvTimeoutError::Timeout) => continue,
                 Err(RecvTimeoutError::Disconnected) => return None,
@@ -90,6 +100,7 @@ pub fn record(
         rx,
         recording_done,
         timer: Some(timer),
+        start_time: None,
         last_frame_time: None,
     })
 }
